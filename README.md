@@ -15,3 +15,4 @@ Several studies have worked on generating maps for urban heat islands (UHIs) usi
 ### Papers Consulted
 * [Machine learning enhanced gap filling in global land surface temperature analysis](https://blogs.reading.ac.uk/weather-and-climate-at-reading/2023/machine-learning-enhanced-gap-filling-in-global-land-surface-temperature-analysis/)
 * [Analyzing Land Surface Temperature (LST) with Landsat 8 Data in Google Earth Engine](https://medium.com/@ridhomuh002/analyzing-land-surface-temperature-lst-with-landsat-8-data-in-google-earth-engine-f4dd7ca28e70)
+* [U-Net:Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/pdf/1505.04597.pdf)
