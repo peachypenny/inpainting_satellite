@@ -56,7 +56,7 @@ class ModisDataset(Dataset):
 
                 np.save(
                     os.path.join(self.data_path, DATA_IMAGE_DIR, tile_filename),
-                    tile_lst,
+                    tile_lst
                 )
 
                 # Retrieve masks from .hdf files

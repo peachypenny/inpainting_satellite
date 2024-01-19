@@ -105,20 +105,17 @@ def query_modis(
     cloud_cover: tuple,
     count: int,
     path: str,
-    create_image=False,
-    create_mask=False,
 ):
     """Queries MODIS data using earth access
 
     Args:
-        date_range (tuple): date range of query
-        bounding_box (tuple): bounding coordinates to search
-        cloud_cover (tuple): range of percent cloud coverage
+        date_range (tuple): date range of query (YYYY-MM-DD)
+        bounding_box (tuple): bounding coordinates to search (lower_left_lon, lower_left_lat, upper_right_lon, upper_right_lat)
+        cloud_cover (tuple): range of percent cloud coverage (max, min)
         count (int): number to retrieve from query
         path (str): path to save data
-        create_image (bool, optional): indicate whether to create jpg images. Defaults to False.
-        create_mask (bool, optional): indicate whether to produce masks. Defaults to False.
     """
+    
     # DOI Link: https://doi.org/10.5067/MODIS/MOD11A1.061
     # also see: https://search.earthdata.nasa.gov/search/granules?p=C1748058432-LPCLOUD&pg[0][v]=f&pg[0][gsk]=-start_date&ff=Available%20in%20Earthdata%20Cloud&tl=1699239359!3!!&fst0=Land%20Surface&lat=-83.40416670000002&long=-118.82965395
     # data format: https://lpdaac.usgs.gov/documents/715/MOD11_User_Guide_V61.pdf
@@ -139,8 +136,6 @@ def query_modis(
     # Declare Paths
     path = os.path.join(path)
     data_path = os.path.join(path, "data")
-    image_path = os.path.join(path, "images")
-    mask_path = os.path.join(path, "masks")
 
     if not os.path.exists(path):
         os.makedirs(path)
@@ -148,36 +143,6 @@ def query_modis(
 
     # Download files
     earthaccess.download(datasets, data_path)
-
-    # Create and save images
-    if create_image:
-        os.makedirs(image_path)
-
-        for image in os.listdir(data_path):
-            sample = os.path.join(data_path, image)
-            sample_lst = get_lst_day(sample)
-            plt.imsave(
-                os.path.join(
-                    image_path, image.replace(image.split(".")[-1], "") + "jpg"
-                ),
-                sample_lst,
-                cmap="gray",
-            )
-
-    # Create masks
-    if create_mask:
-        os.makedirs(mask_path)
-
-        for image in os.listdir(data_path):
-            sample = os.path.join(data_path, image)
-            sample_mask = get_cloud_mask(sample)
-            plt.imsave(
-                os.path.join(
-                    mask_path, image.replace(image.split(".")[-1], "") + "jpg"
-                ),
-                sample_mask,
-                cmap="gray",
-            )
 
     # Save query
     query = {
@@ -190,21 +155,54 @@ def query_modis(
     with open(os.path.join(path, "query.json"), "w") as query_file:
         json.dump(query, query_file)
 
+def geneate_lst_image(img_path: str, save_path: str) -> None:
+    """Creates jpg images from image
 
-def retile(img: np.array, tile_size: tuple, image_size: tuple) -> list:
+    Args:
+        img_path (str): Path to hdf file 
+        save_path (str): Directory to save image
+    """
+    lst = get_lst_day(img_path)
+    img_path = os.path.basename(img_path)
+    plt.imsave(
+        os.path.join(
+            save_path, img_path.replace(img_path.split(".")[-1], "") + "jpg"
+        ),
+        lst,
+        cmap="gray",
+    )
+
+def generate_mask(img_path: str, save_path: str) -> None:
+    """Creates binary mask from image
+
+    Args:
+        img_path (str): Path to hdf file
+        save_path (str): Directory to save image
+    """
+    sample_mask = get_cloud_mask(img_path)
+    img_path = os.path.basename(img_path)
+    plt.imsave(
+        os.path.join(
+            save_path, img_path.replace(img_path.split(".")[-1], "") + "jpg"
+        ),
+        sample_mask,
+        cmap="gray",
+    )
+
+def retile(img: np.array, tile_size: tuple) -> list:
     """Creates subtiles of images. Assumes dimension of original is divisible by height/width
 
     Args:
         img (np.array): original image
-        tile_size (tuple): desired size of tiles
-        image_size (tuple): original image size
+        tile_size (tuple): desired size of tiles (h, w)
+        image_size (tuple): original image size (h, w)
 
     Returns:
         list: list containing np.arrays of tiles
     """
-    h, w = tile_size(0), tile_size(1)
+    h, w = tile_size[0], tile_size[1]
     return [
         img[x : x + h, y : y + w]
-        for x in range(0, img.shape[0], h)
-        for y in range(0, img.shape[1], w)
+        for x in range(0, img.shape[0]//h)
+        for y in range(0, img.shape[1]//w)
     ]
