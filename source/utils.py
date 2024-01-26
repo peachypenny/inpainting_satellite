@@ -2,6 +2,7 @@ import earthaccess
 import pandas as pd
 import geopandas as gpd
 from pyhdf.SD import SD, SDC
+from pyhdf.SD import HDF4Error
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
@@ -59,6 +60,7 @@ def get_lst_day(hdf_path: str) -> np.array:
     return data
 
 
+
 def get_position(hdf_path: str) -> dict:
     """Provides position of hdf file
 
@@ -88,7 +90,15 @@ def get_position(hdf_path: str) -> dict:
     return pos_dict
 
 
-def parse_modis_label(path):
+def parse_modis_label(path: str) -> dict:
+    """Parses modis label in hdf metadata
+    Args:
+        path (str): path to hdf file
+
+    Returns:
+        dict: dictionary containing product name, acquisition date/time, version, and production date
+
+    """
     labels = path.split(".")
     return {
         "product_name": labels[0],
@@ -105,6 +115,7 @@ def query_modis(
     cloud_cover: tuple,
     count: int,
     path: str,
+    save_query: bool=False
 ):
     """Queries MODIS data using earth access
 
@@ -135,25 +146,24 @@ def query_modis(
 
     # Declare Paths
     path = os.path.join(path)
-    data_path = os.path.join(path, "data")
 
     if not os.path.exists(path):
         os.makedirs(path)
-        os.makedirs(data_path)
 
     # Download files
-    earthaccess.download(datasets, data_path)
+    earthaccess.download(datasets, path)
 
     # Save query
-    query = {
-        "date": date_range,
-        "bounding_box": bounding_box,
-        "cloud_cover": cloud_cover,
-        "count": count,
-    }
+    if save_query:
+        query = {
+            "date": date_range,
+            "bounding_box": bounding_box,
+            "cloud_cover": cloud_cover,
+            "count": count,
+        }
 
-    with open(os.path.join(path, "query.json"), "w") as query_file:
-        json.dump(query, query_file)
+        with open(os.path.join(path, "query.json"), "w") as query_file:
+            json.dump(query, query_file)
 
 def geneate_lst_image(img_path: str, save_path: str) -> None:
     """Creates jpg images from image
@@ -193,16 +203,32 @@ def retile(img: np.array, tile_size: tuple) -> list:
     """Creates subtiles of images. Assumes dimension of original is divisible by height/width
 
     Args:
-        img (np.array): original image
-        tile_size (tuple): desired size of tiles (h, w)
-        image_size (tuple): original image size (h, w)
+        img (np.array): Original image
+        tile_size (tuple): Desired size of tiles (h, w)
+        image_size (tuple): Original image size (h, w)
 
     Returns:
-        list: list containing np.arrays of tiles
+        list: List containing np.arrays of tiles
     """
     h, w = tile_size[0], tile_size[1]
     return [
-        img[x : x + h, y : y + w]
-        for x in range(0, img.shape[0]//h)
-        for y in range(0, img.shape[1]//w)
+        img[x*h : x*h + h, y*w : y*w + w]
+        for x in range(img.shape[0]//h)
+        for y in range(img.shape[1]//w)
     ]
+
+def get_percent_coverage(img: np.array, cloud_val: float = 0) -> float:
+    """Returns percent cloud in mask 
+
+    Args:
+        img (np.array): Mask array
+        cloud_val (float): Value of cloud in array
+
+    Returns:
+        float: Percentage cloud coverage (Full cloud coverage = 1.00)
+    """
+    values, counts = np.unique(img, return_counts=True)
+    value_counts = dict(zip(values, counts))
+    if -1 in value_counts.keys():
+        raise ValueError('Error detected')
+    return value_counts[0]/(np.prod(img.shape))

@@ -4,6 +4,7 @@ __pycache__/
 
 # Data
 data/*
+*.npy
 
 # Other
 test.ipynb
