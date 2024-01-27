@@ -3,11 +3,7 @@ import pandas as pd
 import os
 import torch
 from torch.utils.data import Dataset
-from torchvision import datasets
-from torchvision.transforms import ToTensor
-import matplotlib.pyplot as plt
 from utils import *
-from pyhdf.SD import HDF4Error
 
 DATA_MASK_DIR = "masks"
 DATA_IMAGE_DIR = "images"

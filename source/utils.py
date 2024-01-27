@@ -1,11 +1,7 @@
 import earthaccess
-import pandas as pd
-import geopandas as gpd
 from pyhdf.SD import SD, SDC
-from pyhdf.SD import HDF4Error
 import numpy as np
 import matplotlib.pyplot as plt
-import glob
 import os
 import json
 
