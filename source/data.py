@@ -134,7 +134,4 @@ class ModisDataset(Dataset):
         if self.target_transform:
             image = self.target_transform(mask)
 
-        mask = torch.from_numpy(mask.astype(np.float32))
-        image = torch.from_numpy(image.astype(np.float32))
-
         return mask, image
