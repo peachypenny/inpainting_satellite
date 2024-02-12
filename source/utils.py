@@ -6,7 +6,7 @@ import os
 import json
 
 
-def _read_flag(value: int) -> int:
+def read_flag(value: int) -> int:
     """Reads flags of MODIS data 
 
     Args:
@@ -37,7 +37,7 @@ def get_cloud_mask(hdf_path: str) -> np.array:
     """
     ds = SD(hdf_path, SDC.READ)
     data = np.array(ds.select("QC_Day").get())
-    vectorized = np.vectorize(_read_flag)
+    vectorized = np.vectorize(read_flag)
     qc_day_filtered = vectorized(data)
     return qc_day_filtered
 
@@ -225,6 +225,13 @@ def get_percent_coverage(img: np.array, cloud_val: float = 0) -> float:
     """
     values, counts = np.unique(img, return_counts=True)
     value_counts = dict(zip(values, counts))
+    
     if -1 in value_counts.keys():
-        raise ValueError('Error detected')
-    return value_counts[0]/(np.prod(img.shape))
+        raise ValueError('Error found (-1 flag in array)')
+    
+    if 0 in value_counts.keys():
+        return value_counts[0]/(np.prod(img.shape))
+    else:
+        return 0
+
+
