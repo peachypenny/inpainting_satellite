@@ -155,8 +155,8 @@ class LSTDataset(Dataset):
             mask_path (str): path to masks
             save_path (str): path to save masked data
         """
-        self.data_path = os.path(data_path)
-        self.mask_path = os.path(mask_path)
+        self.data_path = os.path.join(data_path)
+        self.mask_path = os.path.join(mask_path)
         self.collection = pd.read_csv(collection_path)  
                  
     def __len__(self):
