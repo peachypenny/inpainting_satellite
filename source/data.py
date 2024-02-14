@@ -146,7 +146,7 @@ class LSTDataset(Dataset):
         self,
         data_path: str,
         mask_path: str,
-        save_path: str
+        collection_path: str
     ):
         """LSTDataset
 
@@ -157,24 +157,7 @@ class LSTDataset(Dataset):
         """
         self.data_path = os.path(data_path)
         self.mask_path = os.path(mask_path)
-        self.save_path = os.path(save_path)
-        self.collection = pd.DataFrame(
-            columns=["sample", "ground_truth"]
-        ) 
-        
-        for image_path in os.listdir(data_path):
-            image = np.load(os.path.join(self.data_path, image_path))
-            for mask in os.listdir(mask_path):
-                cloud_mask = np.load(os.path.join(mask_path, mask)) # Retrieve mask
-                sample = np.multiply(image, cloud_mask) # Create sample
-                sample_name = os.path.splitext(os.path.basename(image_path))[0] + '_' + \
-                    os.path.splitext(os.path.basename(mask))[0] + '.npy'
-                np.save(os.path.join(self.save_path, sample_name), sample) # Save sample
-                
-                self.collection.loc[len(self.collection.index)] = [ 
-                    sample_name,
-                    image_path,
-                ]       
+        self.collection = pd.read_csv(collection_path)  
                  
     def __len__(self):
         return len(self.collection)
