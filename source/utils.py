@@ -235,3 +235,27 @@ def get_percent_coverage(img: np.array, cloud_val: float = 0) -> float:
         return 0
 
 
+def retile_and_name(lst: np.array, basename: str, size_of_tile: tuple):
+    """retiles larger array into subimages and returns a dict of names and arrays
+
+    Args:
+        lst (np.array): input array
+        basename (str): basename to save (subsequently numbered by row / col)
+        size_of_tile (tuple): size of patches
+    """
+    patches = retile(lst, size_of_tile)
+    count = 0
+    collection = {}
+    for patch in patches:
+        row = count // (lst.shape[0] // size_of_tile[0])
+        col = count % (lst.shape[1] // size_of_tile[1])
+        file_name = basename + '_' + str(row) + '_' + str(col)
+        
+        assert file_name not in collection.keys(), 'Duplicate detected!'
+        
+        collection[file_name] = patch
+        count += 1
+    
+    return collection
+
+

@@ -6,6 +6,8 @@ __pycache__/
 data/*
 *.npy
 
-# Other
+# Notebooks
 test.ipynb
+
+# Other
 .venv/*
