@@ -164,7 +164,7 @@ class LSTDataset(Dataset):
     
     def __getitem__(self, index):
         mask = np.load(
-            os.path.join(self.save_path, 
+            os.path.join(self.mask_path, 
                          self.collection.iloc[index]["sample"]))
         image = np.load(
             os.path.join(self.data_path,
