@@ -146,7 +146,9 @@ class LSTDataset(Dataset):
         self,
         data_path: str,
         mask_path: str,
-        collection_path: str
+        collection_path: str,
+        masked_transform = None,
+        image_transform = None
     ):
         """LSTDataset
 
@@ -154,11 +156,15 @@ class LSTDataset(Dataset):
             data_path (str): path to data
             mask_path (str): path to masks
             save_path (str): path to save masked data
+            transform: specify torch transform
         """
         self.data_path = os.path.join(data_path)
         self.mask_path = os.path.join(mask_path)
         self.collection = pd.read_csv(collection_path)  
+        self.masked_transform = masked_transform
+        self.image_transform = image_transform
                  
+                
     def __len__(self):
         return len(self.collection)
     
@@ -171,6 +177,11 @@ class LSTDataset(Dataset):
                          self.collection.iloc[index]["ground_truth"])
             )
         
+        if self.masked_transform:
+            mask = self.masked_transform(mask)
+        if self.image_transform:
+            image = self.image_transform(mask)
+            
         return mask, image
 
                     
