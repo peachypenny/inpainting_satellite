@@ -149,17 +149,20 @@ def query_modis(
     # Download files
     earthaccess.download(datasets, path)
 
-    # Save query
-    if save_query:
-        query = {
-            "date": date_range,
-            "bounding_box": bounding_box,
-            "cloud_cover": cloud_cover,
-            "count": count,
-        }
+    # Save query and metadata
+    with open(os.path.join("query.json"), "w") as query_file:
+        json.dump({
+            'query':{
+                'date_range': date_range,
+                'bounding_box': bounding_box,
+                'cloud_cover': cloud_cover,
+                'count':count
+            },
+            'metadata':dict(zip([i['meta']['native-id'] for i in a], a))
+            }, 
+            query_file
+    )
 
-        with open(os.path.join(path, "query.json"), "w") as query_file:
-            json.dump(query, query_file)
 
 def geneate_lst_image(img_path: str, save_path: str) -> None:
     """Creates jpg images from image
