@@ -10,3 +10,4 @@ torch
 torchaudio
 torchmetrics
 torchvision
+scikit-image
